@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "FileStudio (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "FileStudio (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
