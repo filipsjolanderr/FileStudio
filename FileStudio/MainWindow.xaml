@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <Window
     x:Class="FileStudio.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -6,16 +7,22 @@
     xmlns:local="using:FileStudio"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    Title="FileStudio">
+
     <Grid>
-        <Grid.Resources>
-            <DataTemplate x:Key="FileTemplate">
-                <StackPanel Orientation="Horizontal">
-                    <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,5,0"/>
-                    <TextBlock Text="{Binding Name}"/>
-                </StackPanel>
-            </DataTemplate>
-        </Grid.Resources>
-        <ListView x:Name="FileList" ItemTemplate="{StaticResource FileTemplate}" SelectionMode="Single"/>
+        <ListView x:Name="FileList" SelectionMode="Single">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,5,0"/>
+                        <TextBlock Text="{Binding Name}" Width="150"/>
+                        <TextBlock Text="{Binding Type}" Width="100"/>
+                        <TextBlock Text="{Binding Size}" Width="100"/>
+                        <TextBlock Text="{Binding Date}" Width="150"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
     </Grid>
 </Window>
