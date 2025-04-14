@@ -1,20 +1,8 @@
-﻿using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using Microsoft.UI.Xaml.Shapes;
+﻿using FileStudio.Ai;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.ApplicationModel;
-using Windows.ApplicationModel.Activation;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using FileStudio.FileManagement;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -26,6 +14,7 @@ namespace FileStudio
     /// </summary>
     public partial class App : Application
     {
+        public IServiceProvider ServiceProvider { get; private set; }
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -33,6 +22,28 @@ namespace FileStudio
         public App()
         {
             this.InitializeComponent();
+            ConfigureServices();
+        }
+
+        private void ConfigureServices()
+        {
+            var services = new ServiceCollection();
+
+            // Register the AI client and service
+            services.AddSingleton<IAiClient, GeminiAiClient>(_ => new GeminiAiClient(apiKey: Environment.GetEnvironmentVariable("GEMINI_API_KEY")));
+            services.AddTransient<AiService>();
+            services.AddTransient<IAiService>(provider => provider.GetRequiredService<AiService>());
+
+            // register prompt generator
+            services.AddTransient<IPromptGenerator, FilePromptGenerator>();
+
+            // *** Register the new File Service ***
+            services.AddSingleton<IFileService, FileService>(); 
+
+            // Register MainWindow or ViewModels if needed
+            // services.AddTransient<MainWindow>();
+
+            ServiceProvider = services.BuildServiceProvider();
         }
 
         /// <summary>

@@ -7,22 +7,104 @@
     xmlns:local="using:FileStudio"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:fileManagment="using:FileStudio.FileManagement"
     mc:Ignorable="d"
     Title="FileStudio">
 
-    <Grid>
-        <ListView x:Name="FileList" SelectionMode="Single">
+    <Grid RowSpacing="10" Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" VerticalAlignment="Top" Orientation="Horizontal" Margin="0,0,0,5">
+            <Button x:Name="PickFolderButton" Content="Open Folder"
+                    Click="PickFolderButton_Click" Margin="0,0,10,0"/>
+            <TextBlock x:Name="PickFolderOutputTextBlock"
+                       Text="No folder selected"
+                       VerticalAlignment="Center"
+                       TextWrapping="Wrap" />
+        </StackPanel>
+
+        <Grid Grid.Row="1" x:Name="HeaderGrid" Margin="0,0,18,5" ColumnSpacing="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="150"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="1" Text="Name" FontWeight="SemiBold"/>
+            <TextBlock Grid.Column="2" Text="Type" FontWeight="SemiBold"/>
+            <TextBlock Grid.Column="3" Text="Size" FontWeight="SemiBold"/>
+            <TextBlock Grid.Column="4" Text="Date Modified" FontWeight="SemiBold"/>
+            <TextBlock Grid.Column="5" Text="Content Snippet" FontWeight="SemiBold"/>
+        </Grid>
+
+        <ListView x:Name="FileList"
+                  SelectionMode="Single"
+                  Grid.Row="2" ItemsSource="{x:Bind Files, Mode=OneWay}"
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
             <ListView.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
-                        <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,5,0"/>
-                        <TextBlock Text="{Binding Name}" Width="150"/>
-                        <TextBlock Text="{Binding Type}" Width="100"/>
-                        <TextBlock Text="{Binding Size}" Width="100"/>
-                        <TextBlock Text="{Binding Date}" Width="150"/>
-                    </StackPanel>
+                <DataTemplate x:DataType="fileManagment:CustomStorageFile">
+                    <Grid ColumnSpacing="10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="200"/>
+                            <ColumnDefinition Width="100"/>
+                            <ColumnDefinition Width="100"/>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Image Grid.Column="0" Source="{x:Bind Icon, Mode=OneWay}" Width="16" Height="16" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="{x:Bind Name, Mode=OneWay}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Grid.Column="2" Text="{x:Bind Type, Mode=OneWay}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Grid.Column="3" Text="{x:Bind Size, Mode=OneWay}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Grid.Column="4" Text="{x:Bind Date, Mode=OneWay}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Grid.Column="5" Text="{x:Bind TextContent, Mode=OneWay}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTipService.ToolTip="{x:Bind TextContent, Mode=OneWay}"/>
+                    </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Padding" Value="0"/>
+                    <Setter Property="Margin" Value="0,0,0,2"/>
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                </Style>
+            </ListView.ItemContainerStyle>
         </ListView>
+
+        <Grid Grid.Row="3" ColumnSpacing="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                <Button x:Name="RenameFilesButton"
+                        Content="Rename Files"
+                        Click="RenameFilesButton_Click"
+                        VerticalAlignment="Center"/>
+
+                <Button x:Name="GenerateResponseButton"
+                        Content="Generate"
+                        Click="GenerateResponseButton_Click"
+                        VerticalAlignment="Center"/>
+            </StackPanel>
+
+        </Grid>
+
+        <ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto" MaxHeight="200">
+            <TextBlock x:Name="ResponseTextBlock"
+                       Text="AI Response will appear here..."
+                       TextWrapping="Wrap"
+                       />
+        </ScrollViewer>
+
     </Grid>
 </Window>
