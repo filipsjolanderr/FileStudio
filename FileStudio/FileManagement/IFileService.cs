@@ -24,7 +24,7 @@ public interface IFileService
     /// <param name="files">The collection of FileInfoProperty objects to rename.</param>
     /// <param name="jsonFileInfo">Json file info to rename files.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    Task RenameFilesAsync(IEnumerable<StorageFile> files, string jsonFileInfo);
+    Task RenameFilesAsync(StorageFolder folder, string jsonFileInfo);
 
     Task CreateSidecarFileAsync(IEnumerable<StorageFile> files, string jsonFileInfo);
 

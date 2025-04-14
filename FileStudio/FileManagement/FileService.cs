@@ -26,11 +26,7 @@ public class FileService : IFileService
             // Get all files in the specified folder
             var storageFiles = await folder.GetFilesAsync();
 
-            var files = storageFiles
-                .Where(file => file.IsOfType(StorageItemTypes.File))
-                .ToList();
-
-            return files;
+            return storageFiles;
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -47,15 +43,10 @@ public class FileService : IFileService
     }
 
     //rename files and create categorical folders
-    public async Task RenameFilesAsync(IEnumerable<StorageFile> files, string jsonFileInfo)
+    public async Task RenameFilesAsync(StorageFolder folder, string jsonFileInfo)
     {
         var fileRenamer = new FileRenamer();
-
-        if (files == null || !files.Any())
-        {
-            throw new ArgumentException("No files to rename.");
-        }
-
+        var files = await GetFilesAsync(folder);
         await fileRenamer.RenameFilesAsync(files, jsonFileInfo);
     }
     

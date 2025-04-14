@@ -26,7 +26,7 @@ namespace FileStudio
         // Store the currently selected folder
         private StorageFolder _currentFolder = null;
 
-        public ObservableCollection<StorageFile> Files { get; } = [];
+        public ObservableCollection<CustomStorageFile> Files { get; } = [];
 
         // Store the generated AI response
         private string _generatedResponse = string.Empty;
@@ -103,7 +103,9 @@ namespace FileStudio
                 {
                     foreach (var fileInfo in filesFromService)
                     {
-                        Files.Add(fileInfo);
+                                                // Create a CustomStorageFile instance for each file
+                                                var customFile = await CustomStorageFile.CreateAsync(fileInfo);
+                                                Files.Add(customFile);
                     }
                     // Update status after loading (optional)
                     ResponseTextBlock.Text = !Files.Any() ? $"No files found in {_currentFolder.Name}." : $"Loaded {Files.Count} files from {_currentFolder.Name}. Ready for prompts.";
@@ -176,7 +178,7 @@ namespace FileStudio
 
             try
             {
-                await _fileService.RenameFilesAsync(Files.ToList(), _generatedResponse);
+                await _fileService.RenameFilesAsync(_currentFolder, _generatedResponse);
                 ResponseTextBlock.Text = $"Renamed {Files.Count} files.";
                 // Optionally reload files to reflect the changes in the UI
                 await LoadFilesAsync();
@@ -191,7 +193,7 @@ namespace FileStudio
         {
             try
             {
-                await _fileService.CreateSidecarFileAsync(Files.ToList(), _generatedResponse);
+               // await _fileService.CreateSidecarFileAsync()
             }
             catch (Exception e)
             {

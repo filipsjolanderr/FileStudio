@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -12,6 +13,7 @@ using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System.Text;
 using FileStudio.Content;
+using iText.Layout.Element;
 using s4pi.Package;
 
 namespace FileStudio.FileManagement
@@ -138,6 +140,18 @@ namespace FileStudio.FileManagement
             var fileInfo = new CustomStorageFile(file);
             await fileInfo.LoadPropertiesAsync(file);
             return fileInfo;
+        }
+
+        public async Task<List<StorageFile>> GetStorageFiles(List<CustomStorageFile> files)
+        {
+            var storageFiles = new List<StorageFile>();
+            foreach (var file in files)
+            {
+                var storageFile = await StorageFile.GetFileFromPathAsync(file.Path);
+                storageFiles.Add(storageFile);
+            }
+
+            return storageFiles;
         }
 
         private async Task LoadPropertiesAsync(StorageFile file)
