@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using System;
 using FileStudio.FileManagement;
+using FileStudio.ViewModels; // Add this using statement
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -42,6 +43,7 @@ namespace FileStudio
 
             // Register MainWindow or ViewModels if needed
             // services.AddTransient<MainWindow>();
+            services.AddTransient<MainWindowViewModel>(); // Register the ViewModel
 
             ServiceProvider = services.BuildServiceProvider();
         }
@@ -52,7 +54,8 @@ namespace FileStudio
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            m_window = new MainWindow();
+            // m_window = new MainWindow(); // Old way
+            m_window = new MainWindow(ServiceProvider.GetRequiredService<MainWindowViewModel>()); // Inject ViewModel
             m_window.Activate();
         }
 

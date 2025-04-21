@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <Window
+    x:Name="RootWindow"
     x:Class="FileStudio.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -8,10 +9,15 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:fileManagment="using:FileStudio.FileManagement"
+    xmlns:vm="using:FileStudio.ViewModels" 
     mc:Ignorable="d"
     Title="FileStudio">
 
     <Grid RowSpacing="10" Margin="10">
+        <!-- DataContext can be set here or use x:Bind ViewModel.* directly -->
+        <!-- <Grid.DataContext>
+            <vm:MainWindowViewModel /> <!- This requires a parameterless constructor for design time ->
+        </Grid.DataContext> -->
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -22,9 +28,11 @@
 
         <StackPanel Grid.Row="0" VerticalAlignment="Top" Orientation="Horizontal" Margin="0,0,0,5">
             <Button x:Name="PickFolderButton" Content="Open Folder"
-                    Click="PickFolderButton_Click" Margin="0,0,10,0"/>
+                    Command="{x:Bind ViewModel.PickFolderCommand}" 
+                    CommandParameter="{Binding ElementName=RootWindow}" 
+                    Margin="0,0,10,0"/>
             <TextBlock x:Name="PickFolderOutputTextBlock"
-                       Text="No folder selected"
+                       Text="{x:Bind ViewModel.FolderPathText, Mode=OneWay}"
                        VerticalAlignment="Center"
                        TextWrapping="Wrap" />
         </StackPanel>
@@ -47,7 +55,7 @@
 
         <ListView x:Name="FileList"
                   SelectionMode="Single"
-                  Grid.Row="2" ItemsSource="{x:Bind Files, Mode=OneWay}"
+                  Grid.Row="2" ItemsSource="{x:Bind ViewModel.Files, Mode=OneWay}"
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="fileManagment:CustomStorageFile">
@@ -88,12 +96,14 @@
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
                 <Button x:Name="RenameFilesButton"
                         Content="Rename Files"
-                        Click="RenameFilesButton_Click"
+                        Command="{x:Bind ViewModel.RenameFilesCommand}"
+                        IsEnabled="{x:Bind ViewModel.CanRename, Mode=OneWay}"
                         VerticalAlignment="Center"/>
 
                 <Button x:Name="GenerateResponseButton"
                         Content="Generate"
-                        Click="GenerateResponseButton_Click"
+                        Command="{x:Bind ViewModel.GenerateResponseCommand}"
+                        IsEnabled="{x:Bind ViewModel.IsGenerateResponseEnabled, Mode=OneWay}"
                         VerticalAlignment="Center"/>
             </StackPanel>
 
@@ -101,10 +111,17 @@
 
         <ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto" MaxHeight="200">
             <TextBlock x:Name="ResponseTextBlock"
-                       Text="AI Response will appear here..."
+                       Text="{x:Bind ViewModel.ResponseText, Mode=OneWay}"
                        TextWrapping="Wrap"
                        />
         </ScrollViewer>
+
+        <!-- Optional: Add a progress indicator bound to IsBusy -->
+        <ProgressRing Grid.Row="0" Grid.RowSpan="5" 
+                      IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}" 
+                      HorizontalAlignment="Center" 
+                      VerticalAlignment="Center" 
+                      Width="50" Height="50"/>
 
     </Grid>
 </Window>
