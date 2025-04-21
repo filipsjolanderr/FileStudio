@@ -44,6 +44,9 @@ public class FileRenamer
             return $"SanitizedName_{Guid.NewGuid().ToString().Substring(0, 8)}";
         }
 
+        // replace _ with space
+        sanitized = sanitized.Replace("_", " ");
+
         return sanitized;
     }
 
@@ -178,7 +181,7 @@ public class FileRenamer
                     }
 
 
-                    string sourcePath = originalFileInfo.DisplayName;
+                    string sourcePath = originalFileInfo.Path;
                     string destinationPath = Path.Combine(targetFolderPath, sanitizedNewFileName);
 
                     try

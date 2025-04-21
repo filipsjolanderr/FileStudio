@@ -147,7 +147,10 @@ namespace FileStudio
                     var fileInfo = await CustomStorageFile.CreateAsync(storageFile);
                     files.Add(fileInfo);
                 }
-                var prompt = _promptGenerator.GeneratePrompt(files);
+                // get folders in the selected folder
+                var subFolders = await _currentFolder.GetFoldersAsync();
+                var folders = subFolders.Select(folder => folder.Name).ToList();
+                var prompt = _promptGenerator.GeneratePrompt(files, folders);
                 _generatedResponse = await _aiService.GenerateResponseAsync(prompt);
                 ResponseTextBlock.Text = _generatedResponse;
                 //CreateSidecarFile();

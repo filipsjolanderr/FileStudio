@@ -30,6 +30,7 @@ namespace FileStudio.FileManagement
         private string _contentType;
         private string _byteContent;
         private string _textContent;
+        private string _textContentTrimmed;
         private BitmapImage _icon;
 
         public string Name
@@ -112,6 +113,16 @@ namespace FileStudio.FileManagement
             }
         }
 
+        public string TextContentTrimmed
+        {
+            get => _textContentTrimmed;
+            set
+            {
+                _textContentTrimmed = value;
+                OnPropertyChanged();
+            }
+        }
+
         public BitmapImage Icon
         {
             get => _icon;
@@ -142,17 +153,6 @@ namespace FileStudio.FileManagement
             return fileInfo;
         }
 
-        public async Task<List<StorageFile>> GetStorageFiles(List<CustomStorageFile> files)
-        {
-            var storageFiles = new List<StorageFile>();
-            foreach (var file in files)
-            {
-                var storageFile = await StorageFile.GetFileFromPathAsync(file.Path);
-                storageFiles.Add(storageFile);
-            }
-
-            return storageFiles;
-        }
 
         private async Task LoadPropertiesAsync(StorageFile file)
         {
@@ -202,6 +202,16 @@ namespace FileStudio.FileManagement
                     ByteContent = "Not supported";
                     TextContent = "Not supported";
                     break;
+            }
+
+            // Trimmed content for display
+            if (TextContent.Length > 200)
+            {
+                TextContentTrimmed = TextContent[..200] + "...";
+            }
+            else
+            {
+                TextContentTrimmed = TextContent;
             }
         }
 

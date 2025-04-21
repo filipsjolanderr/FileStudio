@@ -13,6 +13,7 @@ public interface IPromptGenerator
     /// Generates a prompt string using the provided file name and content.
     /// </summary>
     /// <param name="fileInfoList"> An array of FileInfoProperty objects representing the files to be processed.</param>
+    /// <param name="existingFolders"> A list of existing folders to be considered during the prompt generation.</param>
     /// <returns>A formatted prompt string.</returns>
-    string GeneratePrompt(List<CustomStorageFile> fileInfoList);
+    string GeneratePrompt(List<CustomStorageFile> fileInfoList, List<string> existingFolders);
 }

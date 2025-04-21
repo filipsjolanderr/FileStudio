@@ -66,7 +66,7 @@
                         <TextBlock Grid.Column="2" Text="{x:Bind Type, Mode=OneWay}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                         <TextBlock Grid.Column="3" Text="{x:Bind Size, Mode=OneWay}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                         <TextBlock Grid.Column="4" Text="{x:Bind Date, Mode=OneWay}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                        <TextBlock Grid.Column="5" Text="{x:Bind TextContent, Mode=OneWay}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTipService.ToolTip="{x:Bind TextContent, Mode=OneWay}"/>
+                        <TextBlock Grid.Column="5" Text="{x:Bind TextContentTrimmed, Mode=OneWay}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTipService.ToolTip="{x:Bind TextContent, Mode=OneWay}"/>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>

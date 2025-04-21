@@ -1,7 +1,8 @@
 {
   "profiles": {
     "FileStudio (Package)": {
-      "commandName": "MsixPackage"
+      "commandName": "MsixPackage",
+      "nativeDebugging": true
     },
     "FileStudio (Unpackaged)": {
       "commandName": "Project"
