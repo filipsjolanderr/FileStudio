@@ -12,10 +12,6 @@ using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System.Text;
-using FileStudio.Content;
-using iText.Layout.Element;
-using s4pi.Package;
-
 namespace FileStudio.FileManagement
 {
     public class CustomStorageFile : INotifyPropertyChanged
@@ -194,10 +190,6 @@ namespace FileStudio.FileManagement
                     }
 
                     break;
-                case ".package":
-                    TextContent = ReadPackageContent(file);
-                    ByteContent = Convert.ToBase64String(Encoding.UTF8.GetBytes(TextContent));
-                    break;
                 default:
                     ByteContent = "Not supported";
                     TextContent = "Not supported";
@@ -246,22 +238,6 @@ namespace FileStudio.FileManagement
 
             return text;
         }
-
-        public static string ReadPackageContent(StorageFile file)
-        {
-            var contentReader = new PackageContent();
-
-            var content = contentReader.GetContent(file.Path);
-            var sb = new StringBuilder();
-            foreach (var item in content)
-            {
-                sb.AppendLine(item);
-            }
-
-            return sb.ToString();
-        }
-        
-        
 
         private static string GetSize(ulong size)
         {
