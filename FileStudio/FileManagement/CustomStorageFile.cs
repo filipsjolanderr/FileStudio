@@ -12,6 +12,7 @@ using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System.Text;
+
 namespace FileStudio.FileManagement
 {
     public class CustomStorageFile : INotifyPropertyChanged
