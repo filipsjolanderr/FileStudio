@@ -239,6 +239,7 @@ namespace FileStudio.FileManagement
 
             return text;
         }
+
         private static string GetSize(ulong size)
         {
             string[] sizes = ["B", "KB", "MB", "GB", "TB"];
