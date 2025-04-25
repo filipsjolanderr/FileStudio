@@ -26,9 +26,9 @@
   <ItemGroup>
     <PackageReference Include="itext" Version="9.1.0" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250310001" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250401001" />
     <Manifest Include="$(ApplicationManifest)" />
-    <PackageReference Include="Mscc.GenerativeAI" Version="2.4.0" />
+    <PackageReference Include="Mscc.GenerativeAI" Version="2.5.2" />
   </ItemGroup>
 
   <!--
@@ -39,129 +39,6 @@
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
   </ItemGroup>
-  <ItemGroup>
-    <Reference Include="DDSPanel">
-      <HintPath>..\..\..\..\Downloads\S4PI\DDSPanel.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.AnimationResources">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.AnimationResources.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.CASPartResource">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.CASPartResource.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.CatalogResource">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.CatalogResource.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.Commons">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.Commons.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.ComplateResource">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.ComplateResource.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.Controls">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.Controls.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.CustomForms">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.CustomForms.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.DataResource">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.DataResource.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.DefaultResource">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.DefaultResource.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.DWorldResource">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.DWorldResource.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.Extensions">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.Extensions.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.Filetable">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.Filetable.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.GenericRCOLResource">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.GenericRCOLResource.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.Helpers">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.Helpers.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.ImageResource">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.ImageResource.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.Interfaces">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.Interfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.JazzResource">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.JazzResource.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.LotDescriptionResource">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.LotDescriptionResource.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.MeshChunks">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.MeshChunks.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.MiscellaneousResources">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.MiscellaneousResources.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.ModularResource">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.ModularResource.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.NameMapResource">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.NameMapResource.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.NGMPHashMapResource">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.NGMPHashMapResource.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.Package">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.Package.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.RCOLChunks">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.RCOLChunks.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.RegionDescriptionResource">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.RegionDescriptionResource.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.Resource.Commons">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.Resource.Commons.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.RigResource">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.RigResource.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.Settings">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.Settings.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.StblResource">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.StblResource.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.TerrainBlendMapResource">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.TerrainBlendMapResource.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.TerrainMeshResource">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.TerrainMeshResource.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.TextResource">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.TextResource.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.ThumbnailCacheResource">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.ThumbnailCacheResource.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.TxtcResource">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.TxtcResource.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.WorldDescriptionResource">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.WorldDescriptionResource.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.WorldObjectDataResource">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.WorldObjectDataResource.dll</HintPath>
-    </Reference>
-    <Reference Include="s4pi.WrapperDealer">
-      <HintPath>..\..\..\..\Downloads\S4PI\s4pi.WrapperDealer.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Custom">
-      <HintPath>..\..\..\..\Downloads\S4PI\System.Custom.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
   <!--
     Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution
     Explorer "Package and Publish" context menu entry to be enabled for this project even if
