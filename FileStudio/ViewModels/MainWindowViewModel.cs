@@ -1,7 +1,6 @@
 // ViewModels/MainWindowViewModel.cs
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using FileStudio.Ai;
+using FileStudio.Mvvm; // Add using for custom MVVM
 using FileStudio.FileManagement;
 using Microsoft.UI.Xaml;
 using System; 
@@ -12,10 +11,11 @@ using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
+using System.Windows.Input; // Add for ICommand
 
 namespace FileStudio.ViewModels
 {
-    public partial class MainWindowViewModel : ObservableObject
+    public class MainWindowViewModel : ObservableObject
     {
         private readonly IAiService _aiService;
         private readonly IFileService _fileService;
@@ -24,22 +24,63 @@ namespace FileStudio.ViewModels
         // Store the currently selected folder
         private StorageFolder _currentFolder = null;
 
-        [ObservableProperty]
+        // [ObservableProperty]
         private string _folderPathText = "No folder selected";
+        public string FolderPathText
+        {
+            get => _folderPathText;
+            set => SetProperty(ref _folderPathText, value);
+        }
 
-        [ObservableProperty]
+        // [ObservableProperty]
         private string _responseText = "AI Response will appear here...";
+        public string ResponseText
+        {
+            get => _responseText;
+            set => SetProperty(ref _responseText, value);
+        }
 
-        [ObservableProperty]
+        // [ObservableProperty]
         private bool _isBusy = false; // To indicate loading/processing states
+        public bool IsBusy
+        {
+            get => _isBusy;
+            set
+            {
+                if (SetProperty(ref _isBusy, value))
+                {
+                    // Manually trigger CanExecuteChanged for commands and dependent properties
+                    (PickFolderCommand as RelayCommand)?.NotifyCanExecuteChanged(); // Use the new command property
+                    (GenerateResponseCommand as RelayCommand)?.NotifyCanExecuteChanged(); // Use the new command property
+                    (RenameFilesCommand as RelayCommand)?.NotifyCanExecuteChanged(); // Use the new command property
+                    OnPropertyChanged(nameof(IsGenerateResponseEnabled));
+                }
+            }
+        }
 
-        [ObservableProperty]
+        // [ObservableProperty]
         private bool _canRename = false; // Controls Rename button enabled state
+        public bool CanRename
+        {
+            get => _canRename;
+            set
+            {
+                if (SetProperty(ref _canRename, value))
+                {
+                    (RenameFilesCommand as RelayCommand)?.NotifyCanExecuteChanged(); // Use the new command property
+                }
+            }
+        }
 
         public ObservableCollection<CustomStorageFile> Files { get; } = [];
 
         // Store the generated AI response
         private string _generatedResponse = string.Empty;
+
+        // Commands
+        public ICommand PickFolderCommand { get; }
+        public ICommand GenerateResponseCommand { get; }
+        public ICommand RenameFilesCommand { get; }
 
         // Constructor for DI
         public MainWindowViewModel(IAiService aiService, IFileService fileService, IPromptGenerator promptGenerator)
@@ -47,9 +88,14 @@ namespace FileStudio.ViewModels
             _aiService = aiService;
             _fileService = fileService;
             _promptGenerator = promptGenerator;
+
+            // Initialize Commands
+            PickFolderCommand = new RelayCommand(async (param) => await PickFolderAsync(param), _ => !IsBusy); // CanExecute depends on IsBusy
+            GenerateResponseCommand = new RelayCommand(async _ => await GenerateResponseAsync(), _ => CanGenerateResponse());
+            RenameFilesCommand = new RelayCommand(async _ => await RenameFilesAsync(), _ => CanRenameFiles());
         }
 
-        [RelayCommand]
+        // [RelayCommand] // Remove attribute
         private async Task PickFolderAsync(object windowObject)
         {
             if (windowObject is not Window window) return;
@@ -77,7 +123,7 @@ namespace FileStudio.ViewModels
             }
         }
 
-        [RelayCommand(CanExecute = nameof(CanGenerateResponse))] 
+        // [RelayCommand(CanExecute = nameof(CanGenerateResponse))] // Remove attribute
         private async Task GenerateResponseAsync()
         {
             if (_currentFolder == null || !Files.Any()) 
@@ -113,7 +159,7 @@ namespace FileStudio.ViewModels
             }
         }
 
-        [RelayCommand(CanExecute = nameof(CanRenameFiles))] 
+        // [RelayCommand(CanExecute = nameof(CanRenameFiles))] // Remove attribute
         private async Task RenameFilesAsync()
         { 
             if (_currentFolder == null || !Files.Any() || string.IsNullOrEmpty(_generatedResponse))
@@ -150,15 +196,12 @@ namespace FileStudio.ViewModels
         private bool CanRenameFiles() => !IsBusy && _currentFolder != null && Files.Any() && !string.IsNullOrEmpty(_generatedResponse) && CanRename;
 
         // Public property for XAML binding to GenerateResponseCommand's CanExecute status
-        public bool IsGenerateResponseEnabled => CanGenerateResponse();
+        // Update this to check the command's CanExecute status directly if needed, or keep logic here
+        // For simplicity, keeping the logic here, but ensure GenerateResponseCommand.NotifyCanExecuteChanged() is called
+        public bool IsGenerateResponseEnabled => CanGenerateResponse(); 
 
         // Need to notify property changed for IsGenerateResponseEnabled when dependencies change
-        partial void OnIsBusyChanged(bool value)
-        {
-            GenerateResponseCommand.NotifyCanExecuteChanged();
-            RenameFilesCommand.NotifyCanExecuteChanged();
-            OnPropertyChanged(nameof(IsGenerateResponseEnabled)); // Notify UI about the change
-        }
+        // // partial void OnIsBusyChanged(bool value) // No longer partial - logic moved to IsBusy setter
 
         // We also need to notify when Files collection or _currentFolder changes.
         // LoadFilesAsync already calls NotifyCanExecuteChanged, which is good.
@@ -176,8 +219,8 @@ namespace FileStudio.ViewModels
                 FolderPathText = "Please select a folder first.";
                 ResponseText = "";
                 // Ensure state is updated even if no folder
-                GenerateResponseCommand.NotifyCanExecuteChanged();
-                RenameFilesCommand.NotifyCanExecuteChanged();
+                (GenerateResponseCommand as RelayCommand)?.NotifyCanExecuteChanged(); // Use the new command property
+                (RenameFilesCommand as RelayCommand)?.NotifyCanExecuteChanged(); // Use the new command property
                 OnPropertyChanged(nameof(IsGenerateResponseEnabled));
                 return;
             }
@@ -212,11 +255,8 @@ namespace FileStudio.ViewModels
             }
             finally
             {
-                IsBusy = false;
-                // Update CanExecute for commands after loading
-                GenerateResponseCommand.NotifyCanExecuteChanged();
-                RenameFilesCommand.NotifyCanExecuteChanged();
-                OnPropertyChanged(nameof(IsGenerateResponseEnabled)); // Notify UI about the change
+                IsBusy = false; // This setter now handles the notifications
+                // The IsBusy setter already calls NotifyCanExecuteChanged for the commands
             }
         }
     }
