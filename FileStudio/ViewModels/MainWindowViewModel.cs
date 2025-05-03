@@ -3,7 +3,7 @@ using FileStudio.Ai;
 using FileStudio.Mvvm; // Add using for custom MVVM
 using FileStudio.FileManagement;
 using Microsoft.UI.Xaml;
-using System; 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -12,14 +12,18 @@ using Windows.Storage;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
 using System.Windows.Input; // Add for ICommand
+using FileStudio.Communication; // Add Mediator namespace
+using FileStudio.Communication.Messages; // Add Messages namespace
 
 namespace FileStudio.ViewModels
 {
     public class MainWindowViewModel : ObservableObject
     {
-        private readonly IAiService _aiService;
-        private readonly IFileService _fileService;
-        private readonly IPromptGenerator _promptGenerator;
+        // Remove direct service dependencies
+        // private readonly IAiService _aiService;
+        // private readonly IFileService _fileService;
+        // private readonly IPromptGenerator _promptGenerator;
+        private readonly IMediator _mediator;
 
         // Store the currently selected folder
         private StorageFolder _currentFolder = null;
@@ -82,12 +86,13 @@ namespace FileStudio.ViewModels
         public ICommand GenerateResponseCommand { get; }
         public ICommand RenameFilesCommand { get; }
 
-        // Constructor for DI
-        public MainWindowViewModel(IAiService aiService, IFileService fileService, IPromptGenerator promptGenerator)
+        // Constructor for DI - Inject IMediator
+        public MainWindowViewModel(IMediator mediator)
         {
-            _aiService = aiService;
-            _fileService = fileService;
-            _promptGenerator = promptGenerator;
+            _mediator = mediator;
+            // _aiService = aiService;
+            // _fileService = fileService;
+            // _promptGenerator = promptGenerator;
 
             // Initialize Commands
             PickFolderCommand = new RelayCommand(async (param) => await PickFolderAsync(param), _ => !IsBusy); // CanExecute depends on IsBusy
@@ -100,33 +105,43 @@ namespace FileStudio.ViewModels
         {
             if (windowObject is not Window window) return;
 
-            var folderPicker = new FolderPicker
-            {
-                SuggestedStartLocation = PickerLocationId.Desktop
-            };
-            folderPicker.FileTypeFilter.Add("*");
-
             var hwnd = WindowNative.GetWindowHandle(window);
-            InitializeWithWindow.Initialize(folderPicker, hwnd);
+            var request = new PickFolderRequest(hwnd);
 
-            StorageFolder folder = await folderPicker.PickSingleFolderAsync();
-
-            if (folder != null)
+            IsBusy = true;
+            try
             {
-                _currentFolder = folder;
-                FolderPathText = folder.Path;
-                await LoadFilesAsync();
+                var response = await _mediator.SendAsync(request);
+
+                if (response.SelectedFolder != null)
+                {
+                    _currentFolder = response.SelectedFolder;
+                    FolderPathText = _currentFolder.Path;
+                    await LoadFilesAsync();
+                }
+                else
+                {
+                    // User cancelled
+                    FolderPathText = "Folder selection cancelled.";
+                    Files.Clear();
+                    _currentFolder = null;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                // User cancelled
+                FolderPathText = $"Error picking folder: {ex.Message}";
+                // Handle error appropriately, maybe show a dialog
+            }
+            finally
+            {
+                IsBusy = false;
             }
         }
 
         // [RelayCommand(CanExecute = nameof(CanGenerateResponse))] // Remove attribute
         private async Task GenerateResponseAsync()
         {
-            if (_currentFolder == null || !Files.Any()) 
+            if (_currentFolder == null || !Files.Any())
             {
                 ResponseText = "Please select a folder and ensure files are loaded.";
                 return;
@@ -138,20 +153,32 @@ namespace FileStudio.ViewModels
 
             try
             {
-                // Re-fetch file details if necessary, or use existing Files collection directly
-                // Assuming Files collection is up-to-date enough for the prompt
-                var filesForPrompt = Files.ToList(); // Create a copy if needed
-                var subFolders = await _currentFolder.GetFoldersAsync();
-                var folders = subFolders.Select(f => f.Name).ToList();
+                // Prepare data for the request
+                var filesForRequest = Files.ToList();
+                var subFolderItems = await _currentFolder.GetFoldersAsync();
+                var subFolderNames = subFolderItems.Select(f => f.Name).ToList();
 
-                var prompt = _promptGenerator.GeneratePrompt(filesForPrompt, folders);
-                _generatedResponse = await _aiService.GenerateResponseAsync(prompt);
-                ResponseText = _generatedResponse;
-                CanRename = !string.IsNullOrEmpty(_generatedResponse); // Enable rename if response is valid
+                var request = new GenerateResponseRequest(_currentFolder, filesForRequest, subFolderNames);
+                var response = await _mediator.SendAsync(request);
+
+                if (response.Success)
+                {
+                    _generatedResponse = response.GeneratedResponse;
+                    ResponseText = _generatedResponse;
+                    CanRename = !string.IsNullOrEmpty(_generatedResponse); // Enable rename if response is valid
+                }
+                else
+                {
+                    ResponseText = response.ErrorMessage ?? "Failed to generate AI response.";
+                    _generatedResponse = string.Empty;
+                    CanRename = false;
+                }
             }
             catch (Exception ex)
-            { 
+            {
                 ResponseText = $"Error generating AI response: {ex.Message}";
+                _generatedResponse = string.Empty;
+                CanRename = false;
             }
             finally
             {
@@ -161,7 +188,7 @@ namespace FileStudio.ViewModels
 
         // [RelayCommand(CanExecute = nameof(CanRenameFiles))] // Remove attribute
         private async Task RenameFilesAsync()
-        { 
+        {
             if (_currentFolder == null || !Files.Any() || string.IsNullOrEmpty(_generatedResponse))
             {
                 ResponseText = "Cannot rename: Folder not selected, no files loaded, or no AI response generated.";
@@ -173,13 +200,22 @@ namespace FileStudio.ViewModels
 
             try
             {
-                // Pass the current folder and the generated response to the service
-                await _fileService.RenameFilesAsync(_currentFolder, _generatedResponse);
-                ResponseText = $"Renamed files based on the generated response.";
-                _generatedResponse = string.Empty; // Clear response after use
-                CanRename = false; // Disable rename after completion
-                // Reload files to show changes
-                await LoadFilesAsync(); 
+                var request = new RenameFilesRequest(_currentFolder, _generatedResponse);
+                var response = await _mediator.SendAsync(request);
+
+                ResponseText = response.Message;
+                if (response.Success)
+                {
+                    _generatedResponse = string.Empty; // Clear response after use
+                    CanRename = false; // Disable rename after completion
+                    // Reload files to show changes
+                    await LoadFilesAsync();
+                }
+                else
+                {
+                    // Keep CanRename true if renaming failed but response is still valid?
+                    // Or clear response? For now, keep CanRename as is, user might retry.
+                }
             }
             catch (Exception ex)
             {
@@ -198,65 +234,40 @@ namespace FileStudio.ViewModels
         // Public property for XAML binding to GenerateResponseCommand's CanExecute status
         // Update this to check the command's CanExecute status directly if needed, or keep logic here
         // For simplicity, keeping the logic here, but ensure GenerateResponseCommand.NotifyCanExecuteChanged() is called
-        public bool IsGenerateResponseEnabled => CanGenerateResponse(); 
+        public bool IsGenerateResponseEnabled => CanGenerateResponse();
 
-        // Need to notify property changed for IsGenerateResponseEnabled when dependencies change
-        // // partial void OnIsBusyChanged(bool value) // No longer partial - logic moved to IsBusy setter
-
-        // We also need to notify when Files collection or _currentFolder changes.
-        // LoadFilesAsync already calls NotifyCanExecuteChanged, which is good.
-        // Let's ensure PickFolderAsync also triggers the notification indirectly or directly.
-        // Modifying LoadFilesAsync to notify the property change is safer.
-
+        // Helper method to load files from the current folder
         private async Task LoadFilesAsync()
         {
-            Files.Clear();
-            _generatedResponse = string.Empty; // Clear previous response
-            CanRename = false; // Reset rename state
-
-            if (_currentFolder == null)
-            {
-                FolderPathText = "Please select a folder first.";
-                ResponseText = "";
-                // Ensure state is updated even if no folder
-                (GenerateResponseCommand as RelayCommand)?.NotifyCanExecuteChanged(); // Use the new command property
-                (RenameFilesCommand as RelayCommand)?.NotifyCanExecuteChanged(); // Use the new command property
-                OnPropertyChanged(nameof(IsGenerateResponseEnabled));
-                return;
-            }
+            if (_currentFolder == null) return;
 
             IsBusy = true;
-            ResponseText = $"Loading files from {_currentFolder.Name}...";
+            Files.Clear(); // Clear existing files
+            CanRename = false; // Reset rename state
+            _generatedResponse = string.Empty; // Clear previous response
+            ResponseText = "Loading files..."; // Update status
 
             try
             {
-                var filesFromService = await _fileService.GetFilesAsync(_currentFolder);
-
-                if (filesFromService != null)
+                var fileItems = await _currentFolder.GetFilesAsync();
+                foreach (var file in fileItems)
                 {
-                    foreach (var fileInfo in filesFromService)
-                    {
-                        var customFile = await CustomStorageFile.CreateAsync(fileInfo);
-                        Files.Add(customFile);
-                    }
-                    ResponseText = !Files.Any() ? $"No files found in {_currentFolder.Name}." : $"Loaded {Files.Count} files from {_currentFolder.Name}. Ready for prompts.";
+                    // Create CustomStorageFile instances (assuming constructor exists)
+                    Files.Add(new CustomStorageFile(file));
                 }
-                else
-                {
-                    FolderPathText = $"Failed to load files from '{_currentFolder.Name}'. Check permissions.";
-                    ResponseText = $"Error loading files from '{_currentFolder.Name}'.";
-                }
+                ResponseText = $"Loaded {Files.Count} files. Ready to generate response.";
             }
             catch (Exception ex)
             {
-                FolderPathText = $"Error accessing folder '{_currentFolder.Name}'.";
                 ResponseText = $"Error loading files: {ex.Message}";
-                System.Diagnostics.Debug.WriteLine($"Error loading files: {ex.Message}");
             }
             finally
             {
-                IsBusy = false; // This setter now handles the notifications
-                // The IsBusy setter already calls NotifyCanExecuteChanged for the commands
+                IsBusy = false;
+                // Update command states after loading
+                (GenerateResponseCommand as RelayCommand)?.NotifyCanExecuteChanged();
+                (RenameFilesCommand as RelayCommand)?.NotifyCanExecuteChanged();
+                OnPropertyChanged(nameof(IsGenerateResponseEnabled));
             }
         }
     }
