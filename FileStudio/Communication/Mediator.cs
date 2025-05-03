@@ -10,27 +10,33 @@ namespace FileStudio.Communication
     /// <summary>
     /// Concrete implementation of the IMediator interface.
     /// </summary>
-    public class Mediator : IMediator
+    public class Mediator(IServiceProvider serviceProvider) : IMediator
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IServiceProvider _serviceProvider = serviceProvider;
         private readonly Dictionary<Type, Func<object>> _requestHandlers = new();
         private readonly Dictionary<Type, List<Func<object>>> _notificationHandlers = new();
-
-        public Mediator(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider;
-        }
-
-        public Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request)
+        public Task<TResponse> SendAsync<TResponse>(object request)
         {
             var requestType = request.GetType();
+
             if (!_requestHandlers.TryGetValue(requestType, out var handlerFactory))
             {
                 throw new InvalidOperationException($"No handler registered for request type {requestType.Name}");
             }
 
-            var handler = (IRequestHandler<IRequest<TResponse>, TResponse>)handlerFactory();
-            return handler.HandleAsync(request);
+            var handler = handlerFactory();
+
+            // Use reflection to find the HandleAsync method with the correct request type
+            var handleMethod = handler.GetType().GetMethod("HandleAsync", new[] { requestType });
+            if (handleMethod != null)
+            {
+                var result = handleMethod.Invoke(handler, new[] { request });
+                return (Task<TResponse>)result!;
+            }
+            else
+            {
+                throw new InvalidOperationException($"Handler for {requestType.Name} does not have a HandleAsync method accepting {requestType.Name}");
+            }
         }
 
         public async Task PublishAsync(INotification notification)
@@ -58,7 +64,6 @@ namespace FileStudio.Communication
         }
 
         public void RegisterHandler<TRequest, TResponse>(Func<IRequestHandler<TRequest, TResponse>> handlerFactory)
-            where TRequest : IRequest<TResponse>
         {
             _requestHandlers[typeof(TRequest)] = () => handlerFactory();
         }

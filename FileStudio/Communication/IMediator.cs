@@ -14,7 +14,7 @@ namespace FileStudio.Communication
         /// <typeparam name="TResponse">The type of the response.</typeparam>
         /// <param name="request">The request object.</param>
         /// <returns>A task representing the asynchronous operation, containing the response.</returns>
-        Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request);
+        Task<TResponse> SendAsync<TResponse>(object request);
 
         /// <summary>
         /// Sends a notification to be handled by multiple handlers.
@@ -29,7 +29,7 @@ namespace FileStudio.Communication
         /// <typeparam name="TRequest">The type of the request.</typeparam>
         /// <typeparam name="TResponse">The type of the response.</typeparam>
         /// <param name="handlerFactory">A factory function to create the handler instance.</param>
-        void RegisterHandler<TRequest, TResponse>(Func<IRequestHandler<TRequest, TResponse>> handlerFactory) where TRequest : IRequest<TResponse>;
+        void RegisterHandler<TRequest, TResponse>(Func<IRequestHandler<TRequest, TResponse>> handlerFactory);
 
         /// <summary>
         /// Registers a handler for a specific notification type.
@@ -55,7 +55,7 @@ namespace FileStudio.Communication
     /// </summary>
     /// <typeparam name="TRequest">The type of the request.</typeparam>
     /// <typeparam name="TResponse">The type of the response.</typeparam>
-    public interface IRequestHandler<in TRequest, TResponse> where TRequest : IRequest<TResponse>
+    public interface IRequestHandler<in TRequest, TResponse>
     {
         Task<TResponse> HandleAsync(TRequest request);
     }

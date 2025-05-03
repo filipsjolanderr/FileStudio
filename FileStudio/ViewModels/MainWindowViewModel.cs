@@ -90,9 +90,6 @@ namespace FileStudio.ViewModels
         public MainWindowViewModel(IMediator mediator)
         {
             _mediator = mediator;
-            // _aiService = aiService;
-            // _fileService = fileService;
-            // _promptGenerator = promptGenerator;
 
             // Initialize Commands
             PickFolderCommand = new RelayCommand(async (param) => await PickFolderAsync(param), _ => !IsBusy); // CanExecute depends on IsBusy
@@ -111,7 +108,7 @@ namespace FileStudio.ViewModels
             IsBusy = true;
             try
             {
-                var response = await _mediator.SendAsync(request);
+                var response = await _mediator.SendAsync<PickFolderResponse>(request);
 
                 if (response.SelectedFolder != null)
                 {
@@ -159,7 +156,7 @@ namespace FileStudio.ViewModels
                 var subFolderNames = subFolderItems.Select(f => f.Name).ToList();
 
                 var request = new GenerateResponseRequest(_currentFolder, filesForRequest, subFolderNames);
-                var response = await _mediator.SendAsync(request);
+                var response = await _mediator.SendAsync<GenerateResponseResponse>(request);
 
                 if (response.Success)
                 {
@@ -201,7 +198,7 @@ namespace FileStudio.ViewModels
             try
             {
                 var request = new RenameFilesRequest(_currentFolder, _generatedResponse);
-                var response = await _mediator.SendAsync(request);
+                var response = await _mediator.SendAsync<RenameFilesResponse>(request);
 
                 ResponseText = response.Message;
                 if (response.Success)
@@ -252,8 +249,7 @@ namespace FileStudio.ViewModels
                 var fileItems = await _currentFolder.GetFilesAsync();
                 foreach (var file in fileItems)
                 {
-                    // Create CustomStorageFile instances (assuming constructor exists)
-                    Files.Add(new CustomStorageFile(file));
+                    Files.Add(await CustomStorageFile.CreateAsync(file));
                 }
                 ResponseText = $"Loaded {Files.Count} files. Ready to generate response.";
             }
